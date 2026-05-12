@@ -1,7 +1,47 @@
+// =====================================================
+// FILE: assets/js/materi.js
+// FITUR LENGKAP:
+// - Tambah materi
+// - Tampil materi LMS style
+// - Edit materi inline
+// - YouTube embed
+// - Audio player langsung
+// - Komentar
+// - Reply komentar
+// =====================================================
+
 document.addEventListener("DOMContentLoaded", () => {
 
   // =========================
-  // SIMPAN DATA
+  // HELPER YOUTUBE EMBED
+  // =========================
+  function convertYoutube(url) {
+    if (!url) return "";
+
+    let videoId = "";
+
+    if (url.includes("watch?v=")) {
+      videoId = url.split("watch?v=")[1].split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1].split("?")[0];
+    }
+
+    if (!videoId) return "";
+
+    return `
+      <div class="video-wrapper">
+        <iframe
+          src="https://www.youtube.com/embed/${videoId}"
+          title="YouTube video player"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+    `;
+  }
+
+  // =========================
+  // SIMPAN DATA MATERI
   // =========================
   const form = document.getElementById("materiForm");
 
@@ -34,89 +74,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // TAMPILKAN DATA
+  // LOAD KOMENTAR
   // =========================
-  const materiList = document.getElementById("materiList");
+  async function loadKomentar(materiId) {
+    const { data, error } = await supabaseClient
+      .from("komentar")
+      .select("*")
+      .eq("materi_id", materiId)
+      .eq("status", 1)
+      .order("created_at", { ascending: true });
 
-  if (materiList) {
-    async function loadMateri() {
-      const { data, error } = await supabaseClient
-        .from("materi")
-        .select("*")
-        .eq("status", 1)
-        .order("id", { ascending: false });
+    if (error) {
+      return `<p>Gagal memuat komentar</p>`;
+    }
 
-      if (error) {
-        materiList.innerHTML = "Gagal memuat data.";
-        return;
-      }
+    const komentarUtama = data.filter(k => !k.parent_id);
 
-      if (data.length === 0) {
-        materiList.innerHTML = "Belum ada materi.";
-        return;
-      }
+    if (!komentarUtama.length) {
+      return `<p>Belum ada komentar.</p>`;
+    }
 
-      materiList.innerHTML = data.map(item => `
-        <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
-          <h3>${item.kode} - ${item.mapel}</h3>
-          <p>${item.materi}</p>
+    return komentarUtama.map(k => `
+      <div class="komentar-item">
+        <strong>${k.nama}</strong>
+        <p>${k.isi}</p>
 
-          ${item.gambar ? `<img src="${item.gambar}" width="200"><br>` : ""}
-          ${item.video ? `<p><a href="${item.video}" target="_blank">Video</a></p>` : ""}
-          ${item.audio ? `<p><a href="${item.audio}" target="_blank">Audio</a></p>` : ""}
-          ${item.ppt ? `<p><a href="${item.ppt}" target="_blank">PPT</a></p>` : ""}
+        <button class="reply-toggle" onclick="toggleReply(${k.id})">↩ Balas</button>
+
+        <div class="reply-form hidden" id="reply-form-${k.id}">
+          <input type="text" id="reply-nama-${k.id}" placeholder="Nama Anda">
+          <textarea id="reply-isi-${k.id}" placeholder="Tulis balasan..."></textarea>
+          <button onclick="kirimReply(${materiId}, ${k.id})">Kirim Balasan</button>
         </div>
-      `).join("");
-    }
 
-    loadMateri();
+        <div class="reply-list">
+          ${data
+            .filter(r => r.parent_id === k.id)
+            .map(r => `
+              <div class="reply-item">
+                <strong>${r.nama}</strong>
+                <p>${r.isi}</p>
+              </div>
+            `).join("")}
+        </div>
+      </div>
+    `).join("");
   }
 
-});
-
-// =========================
-// FILE: assets/js/materi.js
-// FITUR:
-// - Tampil materi model LMS card
-// - Video YouTube embed otomatis
-// - Edit langsung di materi.html
-// - Update Supabase
-// =========================
-
-document.addEventListener("DOMContentLoaded", () => {
+  // =========================
+  // TAMPILKAN DATA MATERI
+  // =========================
   const materiList = document.getElementById("materiList");
 
-  // =========================
-  // HELPER YOUTUBE EMBED
-  // =========================
-  function convertYoutube(url) {
-    if (!url) return "";
-    let videoId = "";
-
-    if (url.includes("watch?v=")) {
-      videoId = url.split("watch?v=")[1].split("&")[0];
-    } else if (url.includes("youtu.be/")) {
-      videoId = url.split("youtu.be/")[1].split("?")[0];
-    }
-
-    if (!videoId) return "";
-
-    return `
-      <div class="video-wrapper">
-        <iframe 
-          src="https://www.youtube.com/embed/${videoId}" 
-          title="YouTube video player" 
-          frameborder="0" 
-          allowfullscreen>
-        </iframe>
-      </div>
-    `;
-  }
-
-  // =========================
-  // LOAD MATERI
-  // =========================
   async function loadMateri() {
+    if (!materiList) return;
+
     const { data, error } = await supabaseClient
       .from("materi")
       .select("*")
@@ -135,17 +147,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     materiList.innerHTML = data.map(item => `
       <div class="card">
-        
+
         ${item.gambar ? `<img src="${item.gambar}" class="materi-img" alt="${item.mapel}">` : ""}
 
         <div class="card-content">
+
           <span class="badge">${item.kode}</span>
+
           <h3>${item.mapel}</h3>
 
           <div class="materi-text" id="text-${item.id}">
             <p>${item.materi}</p>
           </div>
 
+          <!-- FORM EDIT -->
           <div class="edit-form hidden" id="edit-${item.id}">
             <input type="text" id="kode-${item.id}" value="${item.kode}">
             <input type="text" id="mapel-${item.id}" value="${item.mapel}">
@@ -156,20 +171,55 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="text" id="ppt-${item.id}" value="${item.ppt || ""}">
           </div>
 
+          <!-- VIDEO -->
           ${item.video ? convertYoutube(item.video) : ""}
 
+          <!-- AUDIO -->
+          ${item.audio ? `
+            <audio controls style="width:100%; margin-top:14px;">
+              <source src="${item.audio}" type="audio/mpeg">
+              Browser Anda tidak mendukung audio.
+            </audio>
+          ` : ""}
+
+          <!-- LINK PPT -->
           <div class="resource-links">
-            ${item.audio ? `<a href="${item.audio}" target="_blank">🎧 Audio</a>` : ""}
             ${item.ppt ? `<a href="${item.ppt}" target="_blank">📄 PPT</a>` : ""}
           </div>
 
+          <!-- AKSI -->
           <div class="aksi">
             <button class="edit-btn" onclick="toggleEdit(${item.id})">✏️ Edit</button>
             <button class="save-btn hidden" id="save-${item.id}" onclick="saveEdit(${item.id})">💾 Simpan</button>
           </div>
+
+          <!-- KOMENTAR -->
+          <div class="komentar-box">
+            <h4>💬 Diskusi Materi</h4>
+
+            <div id="komentar-list-${item.id}">
+              Memuat komentar...
+            </div>
+
+            <div class="komentar-form">
+              <input type="text" id="nama-${item.id}" placeholder="Nama Anda">
+              <textarea id="isi-${item.id}" placeholder="Tulis komentar..."></textarea>
+              <button onclick="kirimKomentar(${item.id})">Kirim Komentar</button>
+            </div>
+          </div>
+
         </div>
       </div>
     `).join("");
+
+    // LOAD komentar tiap materi
+    for (const item of data) {
+      const komentarHTML = await loadKomentar(item.id);
+      const target = document.getElementById(`komentar-list-${item.id}`);
+      if (target) {
+        target.innerHTML = komentarHTML;
+      }
+    }
   }
 
   // =========================
@@ -209,123 +259,75 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMateri();
   };
 
+  // =========================
+  // TOGGLE REPLY
+  // =========================
+  window.toggleReply = function(id) {
+    document.getElementById(`reply-form-${id}`).classList.toggle("hidden");
+  };
+
+  // =========================
+  // KIRIM KOMENTAR
+  // =========================
+  window.kirimKomentar = async function(materiId) {
+    const nama = document.getElementById(`nama-${materiId}`).value;
+    const isi = document.getElementById(`isi-${materiId}`).value;
+
+    if (!nama || !isi) {
+      alert("Nama dan komentar wajib diisi!");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("komentar")
+      .insert([{
+        materi_id: materiId,
+        nama,
+        isi,
+        status: 1
+      }]);
+
+    if (error) {
+      alert("Gagal komentar: " + error.message);
+      return;
+    }
+
+    loadMateri();
+  };
+
+  // =========================
+  // KIRIM REPLY
+  // =========================
+  window.kirimReply = async function(materiId, parentId) {
+    const nama = document.getElementById(`reply-nama-${parentId}`).value;
+    const isi = document.getElementById(`reply-isi-${parentId}`).value;
+
+    if (!nama || !isi) {
+      alert("Nama dan balasan wajib diisi!");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("komentar")
+      .insert([{
+        materi_id: materiId,
+        nama,
+        isi,
+        parent_id: parentId,
+        status: 1
+      }]);
+
+    if (error) {
+      alert("Gagal reply: " + error.message);
+      return;
+    }
+
+    loadMateri();
+  };
+
+  // =========================
+  // START
+  // =========================
   loadMateri();
+
 });
-
-// =====================================================
-// TAMBAHKAN KE assets/js/materi.js
-// FITUR:
-// - Tampil komentar per materi
-// - Tambah komentar
-// - Reply komentar
-// =====================================================
-
-// =========================
-// LOAD KOMENTAR
-// =========================
-async function loadKomentar(materiId) {
-  const { data, error } = await supabaseClient
-    .from("komentar")
-    .select("*")
-    .eq("materi_id", materiId)
-    .eq("status", 1)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    return `<p>Gagal memuat komentar</p>`;
-  }
-
-  const komentarUtama = data.filter(k => !k.parent_id);
-
-  return komentarUtama.map(k => `
-    <div class="komentar-item">
-      <strong>${k.nama}</strong>
-      <p>${k.isi}</p>
-
-      <button class="reply-toggle" onclick="toggleReply(${k.id})">↩ Balas</button>
-
-      <div class="reply-form hidden" id="reply-form-${k.id}">
-        <input type="text" id="reply-nama-${k.id}" placeholder="Nama Anda">
-        <textarea id="reply-isi-${k.id}" placeholder="Tulis balasan..."></textarea>
-        <button onclick="kirimReply(${materiId}, ${k.id})">Kirim Balasan</button>
-      </div>
-
-      <div class="reply-list">
-        ${data
-          .filter(r => r.parent_id === k.id)
-          .map(r => `
-            <div class="reply-item">
-              <strong>${r.nama}</strong>
-              <p>${r.isi}</p>
-            </div>
-          `).join("")}
-      </div>
-    </div>
-  `).join("");
-}
-
-// =========================
-// TOGGLE REPLY
-// =========================
-window.toggleReply = function(id) {
-  document.getElementById(`reply-form-${id}`).classList.toggle("hidden");
-};
-
-// =========================
-// KIRIM KOMENTAR UTAMA
-// =========================
-window.kirimKomentar = async function(materiId) {
-  const nama = document.getElementById(`nama-${materiId}`).value;
-  const isi = document.getElementById(`isi-${materiId}`).value;
-
-  if (!nama || !isi) {
-    alert("Nama dan komentar wajib diisi!");
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from("komentar")
-    .insert([{
-      materi_id: materiId,
-      nama,
-      isi,
-      status: 1
-    }]);
-
-  if (error) {
-    alert("Gagal komentar: " + error.message);
-    return;
-  }
-
-  loadMateri();
-};
-
-// =========================
-// KIRIM REPLY
-// =========================
-window.kirimReply = async function(materiId, parentId) {
-  const nama = document.getElementById(`reply-nama-${parentId}`).value;
-  const isi = document.getElementById(`reply-isi-${parentId}`).value;
-
-  if (!nama || !isi) {
-    alert("Nama dan balasan wajib diisi!");
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from("komentar")
-    .insert([{
-      materi_id: materiId,
-      nama,
-      isi,
-      parent_id: parentId,
-      status: 1
-    }]);
-
-  if (error) {
-    alert("Gagal reply: " + error.message);
-    return;
-  }
-
-  loadMateri();
-};
