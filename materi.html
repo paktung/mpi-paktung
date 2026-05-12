@@ -1,19 +1,162 @@
+<!-- ========================= -->
+<!-- FILE: materi.html -->
+<!-- ========================= -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar Materi</title>
+  <title>Daftar Materi PSPT</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/do3jvxebp/image/upload/v1770296394/logo-pspt_pdvdab.png">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #ffffff;
+      color: #222;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header img {
+      width: 90px;
+      margin-bottom: 10px;
+    }
+
+    .header h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .top-btn {
+      display: inline-block;
+      margin: 20px 0;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #d60000, #ffcc00);
+      color: #111;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .materi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    .card h3 {
+      color: #111;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .card p {
+      margin-bottom: 10px;
+      line-height: 1.6;
+      color: #444;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .links a {
+      display: inline-block;
+      margin: 4px 6px 4px 0;
+      padding: 8px 12px;
+      background: #111;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .aksi {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .edit-btn {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      background: #ffcc00;
+      color: #111;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .card h3 {
+        font-size: 18px;
+      }
+
+      .top-btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
 </head>
 <body>
 
-  <h2>Daftar Materi</h2>
+  <div class="container">
 
-  <div id="materiList">Loading...</div>
+    <div class="header">
+      <img src="https://res.cloudinary.com/do3jvxebp/image/upload/v1770296394/logo-pspt_pdvdab.png" alt="Logo PSPT">
+      <h1>Daftar Materi PSPT</h1>
+      <p>Materi pembelajaran interaktif guru & siswa</p>
+    </div>
 
-  <br>
-  <a href="index.html">Tambah Materi</a>
+    <a href="index.html" class="top-btn">+ Tambah Materi Baru</a>
+
+    <div id="materiList" class="materi-grid">
+      Loading...
+    </div>
+
+  </div>
 
   <script src="assets/js/config.js"></script>
   <script src="assets/js/materi.js"></script>
