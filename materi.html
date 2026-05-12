@@ -138,6 +138,148 @@
         text-align: center;
       }
     }
+    /* =========================
+TAMBAHKAN KE <style> materi.html
+========================= */
+
+.materi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.materi-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 18px;
+}
+
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #d60000, #ffcc00);
+  color: #111;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card h3 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.card p {
+  color: #444;
+  line-height: 1.7;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  margin-top: 15px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.resource-links {
+  margin-top: 15px;
+}
+
+.resource-links a {
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: #111;
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.aksi {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.edit-btn,
+.save-btn {
+  flex: 1;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background: #ffcc00;
+}
+
+.save-btn {
+  background: #d60000;
+  color: white;
+}
+
+.edit-form {
+  margin-top: 12px;
+}
+
+.edit-form input,
+.edit-form textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.edit-form textarea {
+  min-height: 140px;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .card h3 {
+    font-size: 19px;
+  }
+
+  .materi-img {
+    height: 200px;
+  }
+}
   </style>
 </head>
 <body>
