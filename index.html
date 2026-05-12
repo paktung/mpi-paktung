@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Materi</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+
+  <h2>Tambah Materi</h2>
+
+  <form id="materiForm">
+    <input type="text" id="kode" placeholder="Kode Materi" required><br><br>
+    <input type="text" id="mapel" placeholder="Mata Pelajaran" required><br><br>
+    <textarea id="materi" placeholder="Isi Materi" required></textarea><br><br>
+
+    <input type="text" id="gambar" placeholder="Link Gambar"><br><br>
+    <input type="text" id="video" placeholder="Link Video"><br><br>
+    <input type="text" id="audio" placeholder="Link Audio"><br><br>
+    <input type="text" id="ppt" placeholder="Link PPT"><br><br>
+
+    <button type="submit">Simpan</button>
+  </form>
+
+  <br>
+  <a href="materi.html">Lihat Semua Materi</a>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/materi.js"></script>
+
+</body>
+</html>
