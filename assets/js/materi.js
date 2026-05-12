@@ -211,3 +211,121 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadMateri();
 });
+
+// =====================================================
+// TAMBAHKAN KE assets/js/materi.js
+// FITUR:
+// - Tampil komentar per materi
+// - Tambah komentar
+// - Reply komentar
+// =====================================================
+
+// =========================
+// LOAD KOMENTAR
+// =========================
+async function loadKomentar(materiId) {
+  const { data, error } = await supabaseClient
+    .from("komentar")
+    .select("*")
+    .eq("materi_id", materiId)
+    .eq("status", 1)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return `<p>Gagal memuat komentar</p>`;
+  }
+
+  const komentarUtama = data.filter(k => !k.parent_id);
+
+  return komentarUtama.map(k => `
+    <div class="komentar-item">
+      <strong>${k.nama}</strong>
+      <p>${k.isi}</p>
+
+      <button class="reply-toggle" onclick="toggleReply(${k.id})">↩ Balas</button>
+
+      <div class="reply-form hidden" id="reply-form-${k.id}">
+        <input type="text" id="reply-nama-${k.id}" placeholder="Nama Anda">
+        <textarea id="reply-isi-${k.id}" placeholder="Tulis balasan..."></textarea>
+        <button onclick="kirimReply(${materiId}, ${k.id})">Kirim Balasan</button>
+      </div>
+
+      <div class="reply-list">
+        ${data
+          .filter(r => r.parent_id === k.id)
+          .map(r => `
+            <div class="reply-item">
+              <strong>${r.nama}</strong>
+              <p>${r.isi}</p>
+            </div>
+          `).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+// =========================
+// TOGGLE REPLY
+// =========================
+window.toggleReply = function(id) {
+  document.getElementById(`reply-form-${id}`).classList.toggle("hidden");
+};
+
+// =========================
+// KIRIM KOMENTAR UTAMA
+// =========================
+window.kirimKomentar = async function(materiId) {
+  const nama = document.getElementById(`nama-${materiId}`).value;
+  const isi = document.getElementById(`isi-${materiId}`).value;
+
+  if (!nama || !isi) {
+    alert("Nama dan komentar wajib diisi!");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("komentar")
+    .insert([{
+      materi_id: materiId,
+      nama,
+      isi,
+      status: 1
+    }]);
+
+  if (error) {
+    alert("Gagal komentar: " + error.message);
+    return;
+  }
+
+  loadMateri();
+};
+
+// =========================
+// KIRIM REPLY
+// =========================
+window.kirimReply = async function(materiId, parentId) {
+  const nama = document.getElementById(`reply-nama-${parentId}`).value;
+  const isi = document.getElementById(`reply-isi-${parentId}`).value;
+
+  if (!nama || !isi) {
+    alert("Nama dan balasan wajib diisi!");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("komentar")
+    .insert([{
+      materi_id: materiId,
+      nama,
+      isi,
+      parent_id: parentId,
+      status: 1
+    }]);
+
+  if (error) {
+    alert("Gagal reply: " + error.message);
+    return;
+  }
+
+  loadMateri();
+};
